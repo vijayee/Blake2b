@@ -47,7 +47,7 @@ class Blake2b
     _sigma = _Sigma()
     _buf = Array[U8](_blockBytes)
 
-  new key(digestSize: USize = 4, key: Array[U8])? =>
+  new key(digestSize: USize = 4, key': Array[U8])? =>
     _digestSize = if digestSize > _blockBytes then _blockBytes else digestSize end
     _t = Array[U64].init(0, 2)
     _f = Array[U64].init(0, 2)
@@ -56,22 +56,23 @@ class Blake2b
     _sigma = _Sigma()
     _buf = Array[U8](_blockBytes)
     var k: U64 = 0
-    var j: Usize = 0
+    var j: USize = 0
+    var i: USize = 0
     // XOR key with IV
-    for i in Range(0, key.size())
-      k = k + ((key(i)?.u64() and 0xff) << (i.u64() * 8))
-      i = i + 1
+    while  i < key'.size() do
+      k = k + ((key'(i)?.u64() and 0xff) << (i.u64() * 8))
       if (i % 8) == 7 then
-        _h(c)? = _h(c)? xor k
+        _h(i)? = _h(i)? xor k
         k = 0
         j = j + 1
-        if j >= 8 then
+        if j >= _h.size() then
           break
         end
       end
+      i = i + 1
     end
-  fun ref digest(): Array[U8] =>
-    let buffer: Array[U8] = Array[U8](_digestSize)
+  fun ref digest(): Array[U8] iso^ =>
+    var buffer: Array[U8] = Array[U8](_digestSize)
     if not _isLastBlock() then // digest has already been issued
       _incrementCounter(_buf.size().u64())
       _setLastBlock()
@@ -90,11 +91,20 @@ class Blake2b
         shift = 8 * i
         buffer.push(((h >> shift.u64()) and 0xFF).u8())
         if buffer.size() == _digestSize then
-          return buffer
+          let buffer': Array[U8] iso = recover Array[U8](_digestSize) end
+          for c in buffer.values() do
+            buffer'.push(c)
+          end
+          return consume buffer'
         end
       end
     end
-    buffer.slice(0, _digestSize)
+    buffer = buffer.slice(0, _digestSize)
+    let buffer': Array[U8] iso = recover Array[U8](_digestSize) end
+    for c in buffer.values() do
+      buffer'.push(c)
+    end
+    consume buffer'
 
   fun ref update(data: Array[U8] box) =>
     var dataSize: USize = data.size()
