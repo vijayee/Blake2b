@@ -38,7 +38,7 @@ class Blake2b
   let _iv: Array[U64]
   let _sigma: Array[Array[U8]]
 
-  new create(digestSize: USize = 4) =>
+  new create(digestSize: USize = 32) =>
     _digestSize = if digestSize > _blockBytes then _blockBytes else digestSize end
     _t = Array[U64].init(0, 2)
     _f = Array[U64].init(0, 2)
@@ -47,7 +47,7 @@ class Blake2b
     _sigma = _Sigma()
     _buf = Array[U8](_blockBytes)
 
-  new key(digestSize: USize = 4, key': Array[U8])? =>
+  new key(digestSize: USize = 32, key': Array[U8])? =>
     _digestSize = if digestSize > _blockBytes then _blockBytes else digestSize end
     _t = Array[U64].init(0, 2)
     _f = Array[U64].init(0, 2)
