@@ -1,0 +1,13 @@
+{
+  "packages": [
+    "Blake2b"
+  ],
+  "info": {
+    "description": "Blake2b hashing for Pony ",
+    "homepage": "https://github.com/vijayee/Blake2b",
+    "license": "GPLv3",
+    "version": "0.0.1",
+    "name": "Blake2b"
+  },
+  "deps": []
+}
